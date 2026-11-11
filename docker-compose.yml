@@ -1,0 +1,56 @@
+services:
+
+  mysql:
+    image: mysql:8.0
+    container_name: pharmaassist-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: pharmaassist
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  ai-service:
+    build: ./ai-service
+    container_name: pharmaassist-ai-service
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+
+  backend:
+    build: ./backend
+    container_name: pharmaassist-backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+      ai-service:
+        condition: service_started
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/pharmaassist?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      APP_AI_SERVICE_BASE_URL: http://ai-service:8000
+      APP_CORS_ALLOWED_ORIGIN: http://localhost:5173
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build: ./frontend
+    container_name: pharmaassist-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "5173:5173"
+
+volumes:
+  mysql_data:

@@ -1,0 +1,20 @@
+{
+  "name": "pharmaassist-ai-root",
+  "version": "1.0.0",
+  "description": "Thirumurugan Medicals Pharmacy ERP System",
+  "main": "run-dev.js",
+  "scripts": {
+    "dev": "node run-dev.js",
+    "start": "node run-dev.js",
+    "backend": "python backend-server.py",
+    "frontend": "npm run dev --prefix frontend"
+  },
+  "keywords": [
+    "pharmacy",
+    "erp",
+    "billing",
+    "pos"
+  ],
+  "author": "Antigravity",
+  "license": "ISC"
+}
